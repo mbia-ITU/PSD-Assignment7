@@ -144,6 +144,14 @@ let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list =
       [RET (snd varEnv - 1)]
     | Return (Some e) -> 
       cExpr e varEnv funEnv @ [RET (snd varEnv)]
+    | Switch(e, cases) ->
+      let casesAndLabels = List.map (fun c -> (newLabel(), c) ) cases
+      let endLabel = newLabel()
+
+      cExpr e varEnv funEnv
+      @ List.fold (fun acc (label, (i, block)) -> acc @ [DUP; CSTI i; EQ; NOT; IFZERO label] ) [] casesAndLabels
+      @ List.fold (fun acc (label, (i, block)) -> acc @ [Label label] @ cStmt block varEnv funEnv @ [GOTO endLabel]) [] casesAndLabels
+      @ [Label endLabel; INCSP -1]
 
 and cStmtOrDec stmtOrDec (varEnv : varEnv) (funEnv : funEnv) : varEnv * instr list = 
     match stmtOrDec with 
@@ -206,6 +214,14 @@ and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) : instr list =
       @ cExpr e2 varEnv funEnv
       @ [GOTO labend; Label labtrue; CSTI 1; Label labend]
     | Call(f, es) -> callfun f es varEnv funEnv
+    | TernaryOp(e1, e2, e3) ->
+      let labelFalse  = newLabel()
+      let labelEnd = newLabel()
+
+      cExpr e1 varEnv funEnv    @ [IFZERO labelFalse]
+      @ cExpr e2 varEnv funEnv  @ [GOTO labelEnd]
+      @ [Label labelFalse]      @ cExpr e3 varEnv funEnv
+      @ [Label labelEnd]
     | PreInc (acc) -> cAccess acc varEnv funEnv @ [DUP;LDI;CSTI 1; ADD; STI]
     | PreDec (acc) -> cAccess acc varEnv funEnv @ [DUP;LDI;CSTI 1; SUB; STI]
 
