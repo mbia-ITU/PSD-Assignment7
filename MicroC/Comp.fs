@@ -206,6 +206,14 @@ and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) : instr list =
       @ cExpr e2 varEnv funEnv
       @ [GOTO labend; Label labtrue; CSTI 1; Label labend]
     | Call(f, es) -> callfun f es varEnv funEnv
+    | TernaryOp(e1, e2, e3) ->
+      let labelFalse  = newLabel()
+      let labelEnd = newLabel()
+
+      cExpr e1 varEnv funEnv    @ [IFZERO labelFalse]
+      @ cExpr e2 varEnv funEnv  @ [GOTO labelEnd]
+      @ [Label labelFalse]      @ cExpr e3 varEnv funEnv
+      @ [Label labelEnd]
     | PreInc (acc) -> cAccess acc varEnv funEnv @ [DUP;LDI;CSTI 1; ADD; STI]
     | PreDec (acc) -> cAccess acc varEnv funEnv @ [DUP;LDI;CSTI 1; SUB; STI]
 

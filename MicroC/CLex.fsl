@@ -67,7 +67,9 @@ rule Token = parse
   | "||"            { SEQOR }                     
   | "&&"            { SEQAND }                     
   | "&"             { AMP }                     
-  | "!"             { NOT }                     
+  | "!"             { NOT } 
+  | "?"             { QUESTIONMARK }
+  | ":"             { COLON }                    
   | '('             { LPAR }
   | ')'             { RPAR }
   | '{'             { LBRACE }
