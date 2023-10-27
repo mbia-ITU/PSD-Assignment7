@@ -1,7 +1,7 @@
 # Exercises 8
 
 ## 8.1
- 
+
 ### 8.1.i
 
 We have lexed, parsed, compiled and run ex11.
@@ -145,8 +145,8 @@ It is not annotated, because the TA's have expressed that the bytecode is a suff
 
 ## 8.3
 
-PREINC and PREDEC added to CLex.fsl, and CPar.fsl
-PreInc and PreDec added to absyn.fs
+PREINC and PREDEC added to CLex.fsl, and CPar.fsl.
+PreInc and PreDec added to absyn.fs.
 In comp.fs, in function cExpr, added PreInc and PreDec cases to the pattern match.
 
 We tested the new compiler, with the following code.
@@ -299,4 +299,69 @@ We see that while loops and conditionals are similar, and use jumps, to move aro
 
 ## 8.5
 
+In Absyn.fs, added TernaryOp.
+In CLex.fsl, added Question mark and colon as terminals.
+In CPar.fsy, added Question mark and colon as terminals, and given them a precedes and semantic action.
+In Comp.fs, changed cExpr, to include TernaryOp in the pattern match.
+
+We have tested the new compiler and program, with the following code.
+
+```{c}
+void main() {
+    int n;
+    n = 1 < 0 ? 10 : 20;
+    print n;
+}
+```
+
+```{}
+> compile "Exer8.5";;
+val it: Machine.instr list =
+  [LDARGS; CALL (0, "L1"); STOP; Label "L1"; INCSP 1; GETBP; CSTI 0; ADD;
+   CSTI 1; CSTI 0; LT; IFZERO "L2"; CSTI 10; GOTO "L3"; Label "L2"; CSTI 20;
+   Label "L3"; STI; INCSP -1; GETBP; CSTI 0; ADD; LDI; PRINTI; INCSP -1;
+   INCSP -1; RET -1]
+```
+
+```{}
+...MicroC>java Machine Exer8.5.out
+20
+Ran 0.009 seconds
+```
+
 ## 8.6
+
+In Absyn.fs, added Switch
+In CLex.fsl, added Switch and Cases as keywords
+In CPar.fsy, added Switch and Cases as tokens, Switch has been added in StmtM, and cases has been made its own production.
+In Comp.fs, added Switch to cStmt pattern match.
+
+```{c}
+void main(int n){
+    switch (n)
+    {
+        case 1: {n = 100;}
+        case 2: {n = 200;}
+        case 3: {n = 300;}
+    }
+    print n;
+}
+```
+
+```{}
+> compileToFile (fromFile "Exer8.6.c") "Exer8.6.out";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; GETBP; CSTI 0; ADD; LDI; DUP;
+   CSTI 1; EQ; NOT; IFZERO "L2"; DUP; CSTI 2; EQ; NOT; IFZERO "L3"; DUP;
+   CSTI 3; EQ; NOT; IFZERO "L4"; Label "L2"; GETBP; CSTI 0; ADD; CSTI 100; STI;
+   INCSP -1; INCSP 0; GOTO "L5"; Label "L3"; GETBP; CSTI 0; ADD; CSTI 200; STI;
+   INCSP -1; INCSP 0; GOTO "L5"; Label "L4"; GETBP; CSTI 0; ADD; CSTI 300; STI;
+   INCSP -1; INCSP 0; GOTO "L5"; Label "L5"; INCSP -1; GETBP; CSTI 0; ADD; LDI;
+   PRINTI; INCSP -1; INCSP 0; RET 0]
+```
+
+```{}
+C:\Users\emilf\Documents\swu5th\ProAsData\PSD-Assignment7\MicroC>java Machine Exer8.6.out 2
+200
+Ran 0.009 seconds
+```

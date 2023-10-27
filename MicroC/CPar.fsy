@@ -108,7 +108,7 @@ StmtM:  /* No unbalanced if-else */
   | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE { Switch($3, $6) }
 ;
 
-Case:
+Cases:
   /* empty case */                      { [] }
   | CASE CSTINT COLON Block Cases       { ($2, $4) :: $5 }
 
