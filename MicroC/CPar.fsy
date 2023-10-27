@@ -19,6 +19,7 @@ let nl = CstI 10
 %token EQ NE GT LT GE LE
 %token NOT SEQOR SEQAND 
 %token COLON QUESTIONMARK
+%token SWITCH CASE
 %token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP
 %token PREINC PREDEC
 %token EOF
@@ -104,7 +105,12 @@ StmtM:  /* No unbalanced if-else */
   | Block                               { $1                   }
   | IF LPAR Expr RPAR StmtM ELSE StmtM  { If($3, $5, $7)       }
   | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
+  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE { Switch($3, $6) }
 ;
+
+Case:
+  /* empty case */                      { [] }
+  | CASE CSTINT COLON Block Cases       { ($2, $4) :: $5 }
 
 StmtU:
     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }
