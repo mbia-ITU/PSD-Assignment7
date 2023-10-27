@@ -169,7 +169,133 @@ val it: Machine.instr list =
    CSTI 0; ADD; LDI; PRINTI; INCSP -1; INCSP 0; RET 0]
 ```
 
+The result of running the program with the java machine
+
+```{}
+...>java machine Exer.8.3.out 42
+42
+43
+```
+
 ## 8.4
+
+### 8.4.ex8
+
+```{}
+> compile "ex8";;
+val it: Machine.instr list =
+  [LDARGS; 
+  CALL (0, "L1"); 
+  STOP; 
+  Label "L1"; 
+    INCSP 1; 
+    GETBP; CSTI 0; ADD;
+    CSTI 20000000; 
+    STI; 
+    INCSP -1; 
+    GOTO "L3"; 
+  Label "L2"; 
+    GETBP; CSTI 0; ADD;
+    GETBP; CSTI 0; ADD; LDI;
+    CSTI 1; 
+    SUB;
+    STI;
+    INCSP -1;
+    INCSP 0;
+  Label "L3";
+    GETBP; CSTI 0; ADD; LDI; 
+    IFNZRO "L2"; 
+    INCSP -1; 
+    RET -1
+  ]
+```
+
+Prog1: `0 20000000 16 7 0 1 2 9 18 4 25`
+
+The following is the text based compilation of Prog1.
+
+```{}
+CSTI 20000000;
+GOTO 7;
+CSTI 1;
+SUB;
+DUP;
+IFNZERO;
+DIV;
+STOP;
+```
+
+The program compiled from ex8, is slower than Prog1.
+This is the case because, it does more instructions to get to the same result.
+For instance, the operation `GETBP; CSTI 0; ADD;`, evaluates to `0` in every case, because there is only one activation frame in this program.
+Another slowdown, is the allocation and deallocation of stack space.
+This can be avoided by knowing the location of elements and changing them directly, rather than using STI instructions.
+
+### 8.4.ex13
+
+```{}
+> compile "ex13";;
+val it: Machine.instr list =
+    [LDARGS; CALL (1, "L1"); STOP; 
+    Label "L1"; 
+        INCSP 1; 
+        GETBP; CSTI 1; ADD;
+        CSTI 1889; 
+        STI; 
+        INCSP -1; 
+        GOTO "L3"; 
+    Label "L2"; 
+        GETBP; CSTI 1; ADD; 
+        GETBP; CSTI 1; ADD; LDI; 
+        CSTI 1; ADD; 
+        STI; 
+        INCSP -1; 
+        GETBP; CSTI 1; ADD; LDI;
+        CSTI 4; 
+        MOD; 
+        CSTI 0; 
+        EQ; 
+        IFZERO "L7"; 
+        GETBP; CSTI 1; ADD; LDI; 
+        CSTI 100;
+        MOD; 
+        CSTI 0; 
+        EQ; 
+        NOT; 
+        IFNZRO "L9"; 
+        GETBP; CSTI 1; ADD;  LDI; 
+        CSTI 400; 
+        MOD;
+        CSTI 0; 
+        EQ; 
+        GOTO "L8"; 
+    Label "L9"; 
+        CSTI 1; 
+    Label "L8"; 
+        GOTO "L6";
+    Label "L7"; 
+        CSTI 0; 
+    Label "L6"; 
+        IFZERO "L4"; 
+        GETBP; CSTI 1; ADD; LDI;
+        PRINTI; 
+        INCSP -1; 
+        GOTO "L5"; 
+    Label "L4"; 
+        INCSP 0; 
+    Label "L5"; 
+        INCSP 0;
+    Label "L3"; 
+        GETBP; CSTI 1; ADD; LDI; 
+        GETBP; CSTI 0; ADD; LDI; 
+        LT;
+        IFNZRO "L2"; 
+        INCSP -1; 
+        RET 0
+    ]
+```
+
+We see that while loops and conditionals are similar, and use jumps, to move around within the code.
 
 ## 8.5
 
